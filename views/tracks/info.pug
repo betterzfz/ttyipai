@@ -1,0 +1,173 @@
+extends layout
+
+block content
+	link(href='/stylesheets/tracks/info.css', rel='stylesheet', type='text/css')
+	script(type='text/javascript', src='/javascripts/common-functions.js')
+	#wrap
+		.banner
+			img(src= config_info.org_domain + special_info.org)
+		p.actTime.start 开始时间 #{special_info.shooting_date}（周#{special_info.shooting_week}） #{special_info.shooting_time}
+		.nameBox.pr_no.mt_no
+			h1 #{special_info.name}
+			p.arrow.gray
+				span.txthide.outfit #{special_info.desc}
+				span.fr.services.mr15.pr5 服务条款
+		if special_info.contact
+			a(href='tel:' + special_info.contact)
+				p.whiteBox.pl10.pt10.gray.font6.pb10.pr10.b_1 #{special_info.contact}
+					span.i_tel.i_30.fr
+		input(type='hidden' id='user-id' value= fan_info.user_id)
+		input(type='hidden' id='config-info' value= config_info)
+		.actList
+			ul
+				each val, index in special_info.auction_list
+					li
+						.act.mb_no
+							.actLeft
+								img(src= config_info.org_domain + val.org)
+							.actRight
+								p.actTime
+									span(id='time_' + val.id)
+										if val.count_down_info.is_start
+										else
+											if index
+												| 专场未开始
+											else
+												script.
+													joined_countdown(#{val.count_down_info.start_time} - Math.floor(Date.now()/1000), 'time_' + #{val.id}, 'zh-cn', '距开始：', () => {
+														$.ajax({
+															url : '/tracks/start_track',
+															type : 'post',
+															success : data => {
+																console.log(data);
+															}
+														});
+													});
+								.pd20
+									p.mb10.font7 #{val.name}
+										if fan_info.status == 1
+											if val.attention
+												span(id=val.id special-id=special_info.id class='collect_yes') 已关注
+											else
+												span(id=val.id special-id=special_info.id class='collect_no') 拍前提醒
+										else if fan_info.status == -1
+											span(id=val.id followmehtml='亲,关注我们才能开启提醒哦！' class='sign_up') 拍前提醒
+									p.font6
+										span.red ¥
+											span.font85 #{val.starting_price}
+										if val.order_id
+											span(class='booknow' id='sign_up_' + val.id) 已报名
+										else
+											span(class='booknow' id='sign_up_' + val.id) 未报名
+								if val.order_id
+									.actMsg
+										p.orangeBtn#payShow 委托出价
+						.pay_change
+							input(type='tel', value= val.starting_price, class='newInp')
+							i
+							b
+						if val.order_id
+							p.redBtn 出价
+						else
+							p(id= val.id bond= val.bond followmehtml='亲,关注我们才能报名哦！' class='sign_up orangeBtn') 报名
+
+		// 个人中心
+		.myBox
+			.face
+				img(src='/images/head.png')
+				p 姓名
+					span.i_22.i_edit.ml5
+				span.myYes
+				span.myNo 未认证
+			dl
+				dt
+					span.i_36.i_my_1
+				dd 关注的拍品
+			dl
+			dl
+				dt
+					span.i_36.i_my_2
+				dd 我的保证金
+			dl
+				dt
+					span.i_36.i_my_3
+				dd 我要送拍
+			dl
+				dt
+					span.i_36.i_my_4
+				dd 消息提醒设置
+			dl
+				dt
+					span.i_36.i_my_5
+				dd 更改收货地址
+			dl.my7
+				dt
+					span.i_36.i_my_7
+				dd 更改绑定手机号
+			dl
+				dt
+					span.i_36.i_my_6
+				dd 拍卖规则及协议
+
+		// 委托弹出层
+		.mask
+		.alert#entrust
+			h1 委托出价
+			.mg20
+				input(type='tel', class='payInp', placeholder='输入委托价')
+				.clr
+					span.w47.whiteBtn.fl 取消
+					span.w47.redBtn.fr 确定
+
+		// 报名弹出层
+		.alert#book
+			if fan_info.status == 1
+				.whitebg.clr
+					h1 报名
+					.mg20
+						p(type='center', class='pd20 mb10 font7 grey333') 报名需要缴纳
+							span#signup_bond_html.red 1000
+							| 元保证金是否缴纳？
+						.clr
+							input(type='hidden' id='signup_auctionid')
+							input(type='hidden' id='signup_bond')
+							span.w47.whiteBtn.fl 取消
+							span#signup_confirm.w47.redBtn.fr 确定
+			else if fan_info.status == -1
+				.whitebg.clr
+					h1 关注
+					.mg20
+						p(type='center', class='follow_me pd20 mb10 font7 grey333') 报名需要缴纳
+						.clr
+							input(type='hidden' id='signup_auctionid')
+							span.w47.whiteBtn.fl 取消
+							span#follow_me.w47.redBtn.fr 确定
+		// 服务条款
+		.serverBox
+			h1 服务条款
+			.serTxt
+				p 请注意，本隐私政策仅适用于华为技术有限公司的消费类电子产品，包括但不限于：功能手机、智能手机、平板计算机、家庭终端、数据卡、移动电话或计算机应用程序、工具和软件，以及相关网站、产品和服务。一些华为网站、服务和产品若未显示本政策内容或链接，或各自有专属隐私政策，则本隐私政策不适用。 
+				p 本政策说明华为针对个人数据和隐私数据的主要策略，但是一个简单的政策并无法解决有关数据处理的所有疑虑，因此华为可能会另外提供客户产品或服务专用的信息作为本政策的补充，以便在基于特殊目的处理个人数据时通知客户，请您在使用华为产品或服务时，注意其他形式的此类通知。 
+				p 本政策说明华为针对个人数据和隐私数据的主要策略，但是一个简单的政策并无法解决有关数据处理的所有疑虑，因此华为可能会另外提供客户产品或服务专用的信息作为本政策的补充，以便在基于特殊目的处理个人数据时通知客户，请您在使用华为产品或服务时，注意其他形式的此类通知。
+			p.whiteBtn.reRead.mg.newInp 已阅读
+
+		footer
+			ul
+				li.art
+					span.foot_1.mr5
+					| 艺术
+				li.life
+					span.foot_4.mr5
+					| 生活
+				li.my_on
+					span.foot_2.mr5
+					| 个人
+				li
+					span.foot_3.mr5
+					| 客服
+
+	script(src='/javascripts/jquery.min.js')
+	script(src='/javascripts/px2rem.js')
+	script(src='/javascripts/fastclick.js')
+
+	script(type='text/javascript', src='/javascripts/tracks/info.js')
